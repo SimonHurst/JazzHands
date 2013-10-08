@@ -16,9 +16,11 @@
 - (id)initWithView:(UIView *)view;
 
 - (void)animate:(NSInteger)time;
+
 - (void)addKeyFrame:(IFTTTAnimationKeyFrame *)keyFrame;
 
 - (IFTTTAnimationFrame *)animationFrameForTime:(NSInteger)time;
+
 - (CGFloat)tweenValueForStartTime:(NSInteger)startTime
                           endTime:(NSInteger)endTime
                        startValue:(CGFloat)startValue

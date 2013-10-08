@@ -44,6 +44,16 @@
         return;
     }
 
+    [self sortKeyFramesInOrderOfTimeUsingKeyFrame:keyFrame];
+    
+    [self updateKeyFrameTimeLine];
+    
+    [self updateStartTime];
+
+}
+
+- (void)sortKeyFramesInOrderOfTimeUsingKeyFrame: (IFTTTAnimationKeyFrame *)keyFrame
+{
     // because folks might add keyframes out of order, we have to sort here
     if (keyFrame.time > ((IFTTTAnimationKeyFrame *)self.keyFrames.lastObject).time) {
         [self.keyFrames addObject:keyFrame];
@@ -55,7 +65,10 @@
             }
         }
     }
-    
+}
+
+- (void)updateKeyFrameTimeLine
+{
     self.timeline = [NSMutableArray new];
     for (NSInteger i = 0; i < self.keyFrames.count - 1; i++) {
         IFTTTAnimationKeyFrame *keyFrame = [self.keyFrames objectAtIndex:i];
@@ -65,9 +78,14 @@
             [self.timeline addObject:[self frameForTime:j startKeyFrame:keyFrame endKeyFrame:nextKeyFrame]];
         }
     }
-    
-    self.startTime = ((IFTTTAnimationKeyFrame *)[self.keyFrames objectAtIndex:0]).time;
 }
+
+- (void)updateStartTime
+{
+    IFTTTAnimationKeyFrame *firstKeyFrame = [self.keyFrames objectAtIndex:0];
+    self.startTime = firstKeyFrame.time;
+}
+
 
 - (IFTTTAnimationFrame *)animationFrameForTime:(NSInteger)time
 {
