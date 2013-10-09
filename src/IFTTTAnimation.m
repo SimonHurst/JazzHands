@@ -21,46 +21,64 @@
 {
     self = [super init];
     
-    if (self) {
-        self.keyFrames = [NSMutableArray new];
-        self.timeline = [NSMutableArray new];
-        self.startTime = 0;
+    if (self)
+    {
+        _startTime = 0;
     }
     
     return self;
+}
+
+- (NSMutableArray *)keyFrames
+{
+    if (!_keyFrames) {
+        _keyFrames = [NSMutableArray new];
+    }
+    return _keyFrames;
+}
+
+- (NSMutableArray *)timeline
+{
+    if (!_timeline) {
+        _timeline = [NSMutableArray new];
+    }
+    return _timeline;
 }
 
 - (id)initWithView:(UIView *)view
 {
     self = [IFTTTAnimation new];
-    self.view = view;
+    if (self)
+    {
+        _view = view;
+    }
+    
     return self;
 }
 
 - (void)addKeyFrame:(IFTTTAnimationKeyFrame *)keyFrame
 {
-    if (self.keyFrames.count == 0) {
+    if (self.keyFrames.count == 0)
+    {
         [self.keyFrames addObject:keyFrame];
         return;
     }
 
-    [self sortKeyFramesInOrderOfTimeUsingKeyFrame:keyFrame];
-    
+    [self sortKeyFramesInOrderOfTimeIfNewKeyFrameIsNotAfterLastKeyFrame:keyFrame];
     [self updateKeyFrameTimeLine];
-    
     [self updateStartTime];
-
 }
 
-- (void)sortKeyFramesInOrderOfTimeUsingKeyFrame: (IFTTTAnimationKeyFrame *)keyFrame
+- (void)sortKeyFramesInOrderOfTimeIfNewKeyFrameIsNotAfterLastKeyFrame:(IFTTTAnimationKeyFrame *)newKeyFrame
 {
-    // because folks might add keyframes out of order, we have to sort here
-    if (keyFrame.time > ((IFTTTAnimationKeyFrame *)self.keyFrames.lastObject).time) {
-        [self.keyFrames addObject:keyFrame];
+    if (newKeyFrame.time > ((IFTTTAnimationKeyFrame *)self.keyFrames.lastObject).time)
+    {
+        [self.keyFrames addObject:newKeyFrame];
     } else {
-        for (NSInteger i = 0; i < self.keyFrames.count; i++) {
-            if (keyFrame.time < ((IFTTTAnimationKeyFrame *)[self.keyFrames objectAtIndex:i]).time) {
-                [self.keyFrames insertObject:keyFrame atIndex:i];
+        for (NSInteger i = 0; i < self.keyFrames.count; i++)
+        {
+            if (newKeyFrame.time < [self keyFrameAtIndex:i].time) {
+                [self.keyFrames insertObject:newKeyFrame atIndex:i];
                 break;
             }
         }
@@ -71,8 +89,8 @@
 {
     self.timeline = [NSMutableArray new];
     for (NSInteger i = 0; i < self.keyFrames.count - 1; i++) {
-        IFTTTAnimationKeyFrame *keyFrame = [self.keyFrames objectAtIndex:i];
-        IFTTTAnimationKeyFrame *nextKeyFrame = [self.keyFrames objectAtIndex:i+1];
+        IFTTTAnimationKeyFrame *keyFrame = [self keyFrameAtIndex:i];
+        IFTTTAnimationKeyFrame *nextKeyFrame = [self keyFrameAtIndex:i+1];
         
         for (NSInteger j = keyFrame.time; j <= nextKeyFrame.time; j++) {
             [self.timeline addObject:[self frameForTime:j startKeyFrame:keyFrame endKeyFrame:nextKeyFrame]];
@@ -82,7 +100,7 @@
 
 - (void)updateStartTime
 {
-    IFTTTAnimationKeyFrame *firstKeyFrame = [self.keyFrames objectAtIndex:0];
+    IFTTTAnimationKeyFrame *firstKeyFrame = [self keyFrameAtIndex:0];
     self.startTime = firstKeyFrame.time;
 }
 
@@ -98,6 +116,11 @@
     }
 
     return [self.timeline lastObject];
+}
+
+- (IFTTTAnimationKeyFrame *)keyFrameAtIndex: (NSUInteger) index
+{
+    return (IFTTTAnimationKeyFrame *) [self.keyFrames objectAtIndex:index];
 }
 
 - (void)animate:(NSInteger)time
@@ -125,5 +148,7 @@
     CGFloat vv = dv / dt;
     return (timePassed * vv) + startValue;
 }
+
+
 
 @end
